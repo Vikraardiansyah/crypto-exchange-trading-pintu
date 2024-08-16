@@ -1,117 +1,146 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
 import React from 'react';
-import type {PropsWithChildren} from 'react';
 import {
-  SafeAreaView,
-  ScrollView,
+  AppState,
+  AppStateStatus,
+  Platform,
   StatusBar,
   StyleSheet,
-  Text,
-  useColorScheme,
-  View,
 } from 'react-native';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import {NavigationContainer} from '@react-navigation/native';
+import {addEventListener} from '@react-native-community/netinfo';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+import {NativeStackParamList, TabStackParamList} from './src/types/navigation';
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
+import {GestureHandlerRootView} from 'react-native-gesture-handler';
+import {SWRConfig} from 'swr';
+import CryptoMarketPage from './src/pages/CryptoMarketPage';
+import CryptoDetailPage from './src/pages/CryptoDetailPage';
+import HomeIcon from './src/components/icons/HomeIcon';
+import MarketIcon from './src/components/icons/MarketIcon';
 
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+import colors from './src/themes/colors';
+import HomePage from './src/pages/HomePage';
+
+const isAndroid = Platform.OS === 'android';
+
+const Stack = createNativeStackNavigator<NativeStackParamList>();
+const Tab = createBottomTabNavigator<TabStackParamList>();
+
+const HomeTabScreen = () => {
   return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
-
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
-
-  return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
+    <Tab.Navigator
+      screenOptions={{
+        tabBarActiveTintColor: colors.black,
+        tabBarLabelStyle: {fontSize: 12},
+        tabBarItemStyle: {
+          marginTop: 8,
+          marginBottom: isAndroid ? 8 : undefined,
+        },
+        tabBarStyle: {height: isAndroid ? 66 : 84},
+      }}>
+      <Tab.Screen
+        name="Home"
+        component={HomePage}
+        options={{
+          headerTitle: 'Top Coins',
+          headerTitleStyle: {fontSize: 20},
+          headerTitleAlign: 'left',
+          headerShadowVisible: false,
+          tabBarIcon: HomeIcon,
+        }}
       />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+      <Tab.Screen
+        name="Markets"
+        component={CryptoMarketPage}
+        options={{
+          tabBarIcon: MarketIcon,
+          headerTitleAlign: 'left',
+          headerTitleStyle: {fontSize: 20},
+          headerShadowVisible: false,
+        }}
+      />
+    </Tab.Navigator>
   );
-}
+};
+
+const RootScene = () => {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator>
+        <Stack.Screen
+          name="HomeTab"
+          component={HomeTabScreen}
+          options={{headerShown: false}}
+        />
+        <Stack.Screen
+          name="Detail"
+          component={CryptoDetailPage}
+          options={{
+            headerBackTitleVisible: false,
+            headerBackButtonMenuEnabled: false,
+            headerTintColor: colors.black,
+            headerTitleAlign: 'center',
+            headerShadowVisible: false,
+          }}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+};
+
+const App = () => {
+  return (
+    <GestureHandlerRootView style={styles.gestureHandlerRootView}>
+      <StatusBar backgroundColor="#FFFFFF" barStyle="dark-content" />
+      <SWRConfig
+        value={{
+          provider: () => new Map(),
+          isVisible: () => {
+            return true;
+          },
+          initFocus(callback) {
+            let appState = AppState.currentState;
+
+            const onAppStateChange = (nextAppState: AppStateStatus) => {
+              if (
+                appState.match(/inactive|background/) &&
+                nextAppState === 'active'
+              ) {
+                callback();
+              }
+              appState = nextAppState;
+            };
+
+            const subscription = AppState.addEventListener(
+              'change',
+              onAppStateChange,
+            );
+
+            return () => {
+              subscription.remove();
+            };
+          },
+          initReconnect(callback) {
+            const unsubscribe = addEventListener(state => {
+              if (state.isConnected) {
+                callback();
+              }
+            });
+
+            unsubscribe();
+          },
+        }}>
+        <RootScene />
+      </SWRConfig>
+    </GestureHandlerRootView>
+  );
+};
 
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
+  gestureHandlerRootView: {
+    flex: 1,
   },
 });
 

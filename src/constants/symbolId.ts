@@ -1,0 +1,19 @@
+export const BINGX_SPOT_BTC_USDC = 'BINGX_SPOT_BTC_USDC';
+export const BYBIT_FTS_ETH_USD_240927 = 'BYBIT_FTS_ETH_USD_240927';
+export const OKEX_IDX_BNB_USDT = 'OKEX_IDX_BNB_USDT';
+export const BITEXLIVE_SPOT_DOGE_USDT = 'BITEXLIVE_SPOT_DOGE_USDT';
+export const BITGETFTS_PERP_ADA_USD = 'BITGETFTS_PERP_ADA_USD';
+export const BYBITSPOT_SPOT_SOL_USDT = 'BYBITSPOT_SPOT_SOL_USDT';
+export const POLONIEX_SPOT_XRP_USDT = 'POLONIEX_SPOT_XRP_USDT';
+export const DERIBIT_IDX_STETH_USD = 'DERIBIT_IDX_STETH_USD';
+export const MEXC_SPOT_TON_USDT = 'MEXC_SPOT_TON_USDT';
+
+export const btc = 'btc';
+export const eth = 'eth';
+export const bnb = 'bnb';
+export const doge = 'doge';
+export const ada = 'ada';
+export const sol = 'sol';
+export const xrp = 'xrp';
+export const steth = 'steth';
+export const ton = 'ton';
