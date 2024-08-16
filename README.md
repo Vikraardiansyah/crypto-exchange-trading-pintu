@@ -1,4 +1,4 @@
-# flip-react-native-test
+# fcrypto-exchange-trading-pintu
 
 ## Reqruirements
 * [npm](https://www.npmjs.com/get-npm) or [yarn](https://yarnpkg.com)
